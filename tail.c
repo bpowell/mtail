@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <string.h>
 
 #define SHORTBY 5
 #define HEIGHT LINES-SHORTBY
@@ -30,7 +31,9 @@ int main(int argc, char* argv[])
 	refresh();
 
 	win0.win = create_win(HEIGHT,WIDTH,0,0);
+	strcpy(win0.filename, "log0.txt");
 	win1.win = create_win(HEIGHT,WIDTH,0,WIDTH+SHORTBY);
+	strcpy(win1.filename, "log1.txt");
 
 	int rc0 = pthread_create(&threads[0], NULL, tail_thread, &win0);
 	if(rc0){exit(-1);}
@@ -69,4 +72,16 @@ size_t strcpy_range(char *dest, const char *src, size_t index, size_t endpos)
 void *tail_thread(void *p)
 {
 	package *pkg = p;
+	char cmd[256];
+	char buffer[512];
+	FILE *cmd_output;
+
+	strcpy(cmd, "tail -f ");
+	strcat(cmd, pkg->filename);
+
+	cmd_output = popen(cmd, "r");
+	while(fgets(buffer, 512, cmd_output)!=NULL){
+		wprintw(pkg->win, buffer);
+		wrefresh(pkg->win);
+	}
 }
