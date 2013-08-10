@@ -7,6 +7,7 @@
 #define WIDTH COLS/2-SHORTBY
 
 WINDOW *create_win(int height, int width, int starty, int startx);
+size_t strcpy_range(char *dest, const char *src, size_t index, size_t endpos);
 
 struct tpackage{
 	WINDOW *win;
@@ -43,4 +44,16 @@ WINDOW *create_win(int height, int width, int starty, int startx)
 
 	wrefresh(win);
 	return win;
+}
+
+size_t strcpy_range(char *dest, const char *src, size_t index, size_t endpos)
+{
+	size_t start, pos;
+	for(start=0, pos=index; start<endpos; start++, pos++)
+	{
+		dest[start] = src[pos];
+	}
+	dest[start] = '\0';
+
+	return start;
 }
