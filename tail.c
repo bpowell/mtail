@@ -1,6 +1,7 @@
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 #define SHORTBY 5
 #define HEIGHT LINES-SHORTBY
@@ -8,6 +9,7 @@
 
 WINDOW *create_win(int height, int width, int starty, int startx);
 size_t strcpy_range(char *dest, const char *src, size_t index, size_t endpos);
+void *tail_thread(void *p);
 
 struct tpackage{
 	WINDOW *win;
@@ -18,16 +20,22 @@ typedef struct tpackage package;
 
 int main(int argc, char* argv[])
 {
+	package win0;
+	package win1;
+	pthread_t threads[2];
+
 	//ncurses setup
 	initscr();
 	cbreak();
 	refresh();
 
-	package win1;
-	win1.win = create_win(HEIGHT,WIDTH,0,0);
+	win0.win = create_win(HEIGHT,WIDTH,0,0);
+	win1.win = create_win(HEIGHT,WIDTH,0,WIDTH+SHORTBY);
 
-	package win2;
-	win2.win = create_win(HEIGHT,WIDTH,0,WIDTH+SHORTBY);
+	int rc0 = pthread_create(&threads[0], NULL, tail_thread, &win0);
+	if(rc0){exit(-1);}
+	int rc1 = pthread_create(&threads[1], NULL, tail_thread, &win1);
+	if(rc1){exit(-2);}
 
 	while(true){}
 
@@ -56,4 +64,9 @@ size_t strcpy_range(char *dest, const char *src, size_t index, size_t endpos)
 	dest[start] = '\0';
 
 	return start;
+}
+
+void *tail_thread(void *p)
+{
+	package *pkg = p;
 }
